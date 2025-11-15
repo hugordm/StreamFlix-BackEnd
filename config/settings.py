@@ -1,46 +1,34 @@
 """
-SETTINGS.PY - Configurações do Django para desenvolvimento e produção
+SETTINGS.PY - Configurações do Django
 
-- Usa SQLite localmente e PostgreSQL em produção (Railway)
-- Configura CORS, CSRF, REST Framework e static files
+PESSOA 1 EXPLICA:
+- INSTALLED_APPS: registra os apps (movies, reviews)
+- DATABASES: SQLite (banco local)
+- DEBUG: True = mostra erros detalhados
+
+PESSOA 2 EXPLICA:
+- CORS: permite frontend acessar a API
+- REST_FRAMEWORK: paginação automática
+- ALLOWED_HOSTS: quem pode acessar
 """
 
 from pathlib import Path
 import os
-import dj_database_url  # Transformar DATABASE_URL em configuração Django
 
-# -------------------------------
-# BASE DIR
-# -------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# -------------------------------
-# SECRET KEY
-# -------------------------------
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-streamflix-2024-mudar-em-producao'
-)
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-streamflix-2024-mudar-em-producao')
 
-# -------------------------------
-# DEBUG
-# -------------------------------
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# -------------------------------
-# HOSTS PERMITIDOS
-# -------------------------------
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.railway.app',    # Railway
-    '.herokuapp.com',  # Heroku
-    '.onrender.com',   # Render
+    '.railway.app',
+    '.herokuapp.com',
+    '.onrender.com',
 ]
 
-# -------------------------------
-# APPS
-# -------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,17 +36,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
+    # Bibliotecas externas
     'rest_framework',
     'corsheaders',
-
+    
+    # Nossos apps
     'movies',
     'reviews',
 ]
 
-# -------------------------------
-# MIDDLEWARE
-# -------------------------------
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -71,14 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# -------------------------------
-# URL CONFIG
-# -------------------------------
 ROOT_URLCONF = 'config.urls'
 
-# -------------------------------
-# TEMPLATES
-# -------------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -95,78 +76,35 @@ TEMPLATES = [
     },
 ]
 
-# -------------------------------
-# WSGI
-# -------------------------------
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# -------------------------------
-# DATABASES
-# -------------------------------
-if os.environ.get('DATABASE_URL'):
-    # Produção: PostgreSQL via Railway
-    DATABASES = {
-        'default': dj_database_url.parse(
-            os.environ['DATABASE_URL'],
-            conn_max_age=600,
-            ssl_require=True  # força SSL para PostgreSQL
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Local: SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
-# -------------------------------
-# PASSWORD VALIDATORS
-# -------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
 ]
 
-# -------------------------------
-# LOCALIZAÇÃO
-# -------------------------------
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Recife'
 USE_I18N = True
 USE_TZ = True
 
-# -------------------------------
-# STATIC FILES
-# -------------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Whitenoise para servir static files em produção
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# -------------------------------
-# AUTO FIELD
-# -------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# -------------------------------
-# CORS
-# -------------------------------
+# CORS - Permite qualquer origem (desenvolvimento)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# -------------------------------
-# CSRF
-# -------------------------------
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-a155e.up.railway.app',  # ajustar para seu deploy
-]
-
-# -------------------------------
-# REST FRAMEWORK
-# -------------------------------
+# Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
