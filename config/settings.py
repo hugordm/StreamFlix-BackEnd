@@ -1,17 +1,13 @@
 """
-SETTINGS.PY - Configurações do Django para produção (Railway, Vercel)
+SETTINGS.PY - Configurações do Django para desenvolvimento e produção
 
-- INSTALLED_APPS: registra apps do projeto e bibliotecas externas
-- DATABASES: SQLite para teste ou PostgreSQL para produção
-- DEBUG: False em produção
-- CORS: permite front acessar API
-- CSRF_TRUSTED_ORIGINS: evita erro 403 no /admin
-- ALLOWED_HOSTS: domínios permitidos
+- Usa SQLite localmente e PostgreSQL em produção (Railway)
+- Configura CORS, CSRF, REST Framework e static files
 """
 
 from pathlib import Path
 import os
-import dj_database_url  # >>> NOVO <<<
+import dj_database_url  # Transformar DATABASE_URL em configuração Django
 
 # -------------------------------
 # BASE DIR
@@ -38,8 +34,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '.railway.app',    # Railway
-    '.herokuapp.com',  # Heroku, se necessário
-    '.onrender.com',   # Render, se necessário
+    '.herokuapp.com',  # Heroku
+    '.onrender.com',   # Render
 ]
 
 # -------------------------------
@@ -105,16 +101,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # -------------------------------
-# DATABASE
+# DATABASES
 # -------------------------------
-# Usa PostgreSQL no Railway e SQLite local como fallback
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+if os.environ.get('DATABASE_URL'):
+    # Produção: PostgreSQL via Railway
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ['DATABASE_URL'],
+            conn_max_age=600,
+            ssl_require=True  # força SSL para PostgreSQL
+        )
+    }
+else:
+    # Local: SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # -------------------------------
 # PASSWORD VALIDATORS
@@ -138,6 +143,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Whitenoise para servir static files em produção
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # -------------------------------
 # AUTO FIELD
 # -------------------------------
@@ -153,7 +161,7 @@ CORS_ALLOW_CREDENTIALS = True
 # CSRF
 # -------------------------------
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-a155e.up.railway.app',
+    'https://web-production-a155e.up.railway.app',  # ajustar para seu deploy
 ]
 
 # -------------------------------
