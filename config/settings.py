@@ -11,6 +11,7 @@ SETTINGS.PY - Configurações do Django para produção (Railway, Vercel)
 
 from pathlib import Path
 import os
+import dj_database_url  # >>> NOVO <<<
 
 # -------------------------------
 # BASE DIR
@@ -45,7 +46,6 @@ ALLOWED_HOSTS = [
 # APPS
 # -------------------------------
 INSTALLED_APPS = [
-    # Apps padrão do Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,11 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Bibliotecas externas
     'rest_framework',
     'corsheaders',
 
-    # Nossos apps
     'movies',
     'reviews',
 ]
@@ -68,7 +66,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir static files em produção
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,12 +107,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # -------------------------------
 # DATABASE
 # -------------------------------
-# SQLite para teste, mas pode mudar para PostgreSQL no Railway
+# Usa PostgreSQL no Railway e SQLite local como fallback
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 # -------------------------------
@@ -145,16 +144,16 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # -------------------------------
-# CORS (permitir front acessar a API)
+# CORS
 # -------------------------------
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # -------------------------------
-# CSRF (evitar erro 403 no admin)
+# CSRF
 # -------------------------------
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-a155e.up.railway.app',  # domínio do Railway
+    'https://web-production-a155e.up.railway.app',
 ]
 
 # -------------------------------
