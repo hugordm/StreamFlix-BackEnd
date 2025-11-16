@@ -116,3 +116,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-df0d1.up.railway.app',
+]
